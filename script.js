@@ -53,21 +53,27 @@
   }
   function setLiveStatus(status) {
     const node = $('#live-status'); if (!node) return;
-    const value = String(status || 'upcoming').trim().toLowerCase().replace(/[-_]+/g, ' ');
-    const live = ['live', 'in progress', 'ongoing'].includes(value);
-    const upcoming = ['upcoming', 'scheduled', 'not started', ''].includes(value);
-    const onBreak = ['break', 'in break', 'interval'].includes(value);
+    const value = String(status ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    const live = ['live','in_progress','ongoing'].includes(value);
+    const upcoming = ['upcoming','scheduled','not_started',''].includes(value);
+    const onBreak = ['break','in_break','innings_break','interval'].includes(value);
     node.classList.toggle('is-live', live);
-    node.classList.toggle('is-upcoming', upcoming);
+    node.classList.toggle('is-upcoming', upcoming || !live);
     const label = node.querySelector('b');
     if (label) label.textContent = live ? 'LIVE MATCH' : (upcoming ? 'NO LIVE MATCH' : (onBreak ? 'MATCH ON BREAK' : 'MATCH COMPLETED'));
+    return { live, upcoming, onBreak };
   }
   function renderScore(match) {
     const host = $('#live-match-card'); if (!host) return;
-    if (!match) { setLiveStatus('upcoming'); host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>'; return; }
-    setLiveStatus(match.status || 'upcoming');
-    if (!['live', 'in progress', 'in_progress', 'ongoing'].includes(String(match.status || '').trim().toLowerCase())) {
+    if (!match) {
+      setLiveStatus('upcoming');
       host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>';
+      return;
+    }
+    const state = setLiveStatus(match.status);
+    if (!state.live) {
+      const message = state.upcoming ? 'No live match at the moment. Check back for the next DPL fixture.' : (state.onBreak ? 'The match is currently on a break.' : 'This match has been completed.');
+      host.innerHTML = `<div class="score-empty">${escapeHTML(message)}</div>`;
       return;
     }
     const innings = match.currentInnings || {};
@@ -75,7 +81,7 @@
     const batting=match.battingScorecard||[], bowling=match.bowlingScorecard||[], fow=match.fallOfWickets||[], commentary=match.recentCommentary||[];
     const battingHTML=batting.length?`<div class="public-scorecard"><h3>BATTING</h3><div class="scorecard-row scorecard-head"><span>BATTER</span><span>R</span><span>B</span><span>4s</span><span>6s</span></div>${batting.map(p=>`<div class="scorecard-row"><b>${escapeHTML(p.playerName)}</b><span>${p.runs}</span><span>${p.balls}</span><span>${p.fours}</span><span>${p.sixes}</span></div>`).join('')}</div>`:'';
     const bowlingHTML=bowling.length?`<div class="public-scorecard"><h3>BOWLING</h3><div class="scorecard-row bowling-row scorecard-head"><span>BOWLER</span><span>O</span><span>R</span><span>W</span></div>${bowling.map(p=>`<div class="scorecard-row bowling-row"><b>${escapeHTML(p.playerName)}</b><span>${escapeHTML(p.overs)}</span><span>${p.runs}</span><span>${p.wickets}</span></div>`).join('')}</div>`:'';
-    host.innerHTML = `<div class="score-top"><span class="score-live-pill">${escapeHTML(match.status || 'Upcoming')}</span><span>${escapeHTML(match.matchName || 'DPL MATCH')}</span></div><div class="score-teams"><div><small>${escapeHTML(match.battingTeamName || 'Batting')}</small><strong>${Number(innings.runs||0)}/${Number(innings.wickets||0)}</strong><span>${overs} overs</span></div><div class="score-vs">VS</div><div><small>${escapeHTML(match.bowlingTeamName || 'Bowling')}</small><strong>—</strong><span>${escapeHTML(match.inningsLabel || 'In progress')}</span></div></div><div class="score-meta"><span>CRR ${Number(innings.balls||0) ? (Number(innings.runs||0)/(Number(innings.balls||0)/6)).toFixed(2) : '0.00'}</span><span>EXTRAS ${Number(innings.extras||0)}</span><span>${escapeHTML(match.statusText || 'Match in progress')}</span></div><div class="current-players"><span>STRIKER <b>${escapeHTML(match.striker||'—')}</b></span><span>NON-STRIKER <b>${escapeHTML(match.nonStriker||'—')}</b></span><span>BOWLER <b>${escapeHTML(match.bowler||'—')}</b></span></div><div class="score-commentary"><b>LAST BALL</b> ${escapeHTML(match.lastCommentary || 'Waiting for the first delivery')}</div>${battingHTML}${bowlingHTML}<div class="fow-line">FALL OF WICKETS: ${fow.map(x=>`${x.wicket}-${x.score} (${x.over})`).join(' · ')||'—'}</div><div class="public-commentary">${commentary.map(x=>`<p><b>${escapeHTML(x.over)}</b> ${escapeHTML(x.text)}</p>`).join('')}</div>`;
+    host.innerHTML = `<div class="score-top"><span class="score-live-pill">${escapeHTML(match.status || 'LIVE')}</span><span>${escapeHTML(match.matchName || 'DPL MATCH')}</span></div><div class="score-teams"><div><small>${escapeHTML(match.battingTeamName || 'Batting')}</small><strong>${Number(innings.runs||0)}/${Number(innings.wickets||0)}</strong><span>${overs} overs</span></div><div class="score-vs">VS</div><div><small>${escapeHTML(match.bowlingTeamName || 'Bowling')}</small><strong>—</strong><span>${escapeHTML(match.inningsLabel || 'In progress')}</span></div></div><div class="score-meta"><span>CRR ${Number(innings.balls||0) ? (Number(innings.runs||0)/(Number(innings.balls||0)/6)).toFixed(2) : '0.00'}</span><span>EXTRAS ${Number(innings.extras||0)}</span><span>${escapeHTML(match.statusText || 'Match in progress')}</span></div><div class="current-players"><span>STRIKER <b>${escapeHTML(match.striker||'—')}</b></span><span>NON-STRIKER <b>${escapeHTML(match.nonStriker||'—')}</b></span><span>BOWLER <b>${escapeHTML(match.bowler||'—')}</b></span></div><div class="score-commentary"><b>LAST BALL</b> ${escapeHTML(match.lastCommentary || 'Waiting for the first delivery')}</div>${battingHTML}${bowlingHTML}<div class="fow-line">FALL OF WICKETS: ${fow.map(x=>`${x.wicket}-${x.score} (${x.over})`).join(' · ')||'—'}</div><div class="public-commentary">${commentary.map(x=>`<p><b>${escapeHTML(x.over)}</b> ${escapeHTML(x.text)}</p>`).join('')}</div>`;
   }
   function renderTeams(teams=[]) {
     const host=$('#public-teams'); if (!host) return;
