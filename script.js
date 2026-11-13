@@ -53,15 +53,15 @@
   }
   function setLiveStatus(status) {
     const node = $('#live-status'); if (!node) return;
-    const value = String(status ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
-    const live = ['live','in_progress','ongoing'].includes(value);
-    const upcoming = ['upcoming','scheduled','not_started',''].includes(value);
-    const onBreak = ['break','in_break','innings_break','interval'].includes(value);
+    const value = String(status || '').trim().toLowerCase();
+    const live = ['live','in progress','in_progress','ongoing'].includes(value);
+    const upcoming = ['upcoming','scheduled','not started',''].includes(value);
+    const onBreak = ['break','interval','innings break','innings_break'].includes(value);
     node.classList.toggle('is-live', live);
-    node.classList.toggle('is-upcoming', upcoming || !live);
-    const label = node.querySelector('b');
-    if (label) label.textContent = live ? 'LIVE MATCH' : (upcoming ? 'NO LIVE MATCH' : (onBreak ? 'MATCH ON BREAK' : 'MATCH COMPLETED'));
-    return { live, upcoming, onBreak };
+    node.classList.toggle('is-upcoming', !live);
+    const label = live ? 'LIVE MATCH' : (onBreak ? 'MATCH ON BREAK' : (upcoming ? 'NO LIVE MATCH' : 'MATCH COMPLETED'));
+    const text = node.querySelector('b');
+    if (text) text.textContent = label;
   }
   function renderScore(match) {
     const host = $('#live-match-card'); if (!host) return;
@@ -70,12 +70,7 @@
       host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>';
       return;
     }
-    const state = setLiveStatus(match.status);
-    if (!state.live) {
-      const message = state.upcoming ? 'No live match at the moment. Check back for the next DPL fixture.' : (state.onBreak ? 'The match is currently on a break.' : 'This match has been completed.');
-      host.innerHTML = `<div class="score-empty">${escapeHTML(message)}</div>`;
-      return;
-    }
+    setLiveStatus(match.status || 'upcoming');
     const innings = match.currentInnings || {};
     const overs = `${Math.floor(Number(innings.balls||0)/6)}.${Number(innings.balls||0)%6}`;
     const batting=match.battingScorecard||[], bowling=match.bowlingScorecard||[], fow=match.fallOfWickets||[], commentary=match.recentCommentary||[];
