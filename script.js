@@ -58,11 +58,11 @@
     const upcoming = ['upcoming','scheduled','not started',''].includes(value);
     node.classList.toggle('is-live', live);
     node.classList.toggle('is-upcoming', upcoming);
-    node.querySelector('b').textContent = live ? 'MATCH LIVE' : (upcoming ? 'NO LIVE MATCH' : 'MATCH COMPLETED');
+    node.querySelector('b').textContent = live ? 'MATCH LIVE' : (upcoming ? 'LIVE MATCH' : 'MATCH COMPLETED');
   }
   function renderScore(match) {
     const host = $('#live-match-card'); if (!host) return;
-    if (!match) { setLiveStatus('upcoming'); host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>'; return; }
+    if (!match) { setLiveStatus('upcoming'); host.innerHTML = '<div class="score-empty">LIVE MATCH</div>'; return; }
     setLiveStatus(match.status || 'live');
     const innings = match.currentInnings || {};
     const overs = `${Math.floor(Number(innings.balls||0)/6)}.${Number(innings.balls||0)%6}`;
