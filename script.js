@@ -51,34 +51,22 @@
     if (!data.ok) throw new Error(data.error || 'Unable to load tournament data.');
     return data;
   }
-  function normaliseMatchStatus(status) {
-    const value = String(status ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
-    if (['live', 'in_progress', 'ongoing', 'inprogress'].includes(value)) return 'live';
-    if (['break', 'innings_break', 'lunch', 'interval', 'on_break'].includes(value)) return 'break';
-    if (['completed', 'complete', 'finished', 'ended'].includes(value)) return 'completed';
-    // Missing or unrecognised status must NEVER be treated as a live match.
-    return 'upcoming';
-  }
   function setLiveStatus(status) {
     const node = $('#live-status'); if (!node) return;
-    const state = normaliseMatchStatus(status);
-    node.classList.toggle('is-live', state === 'live');
-    node.classList.toggle('is-upcoming', state === 'upcoming');
-    const label = state === 'live' ? 'LIVE MATCH'
-      : state === 'break' ? 'MATCH ON BREAK'
-      : state === 'completed' ? 'MATCH COMPLETED' : 'NO LIVE MATCH';
-    const text = node.querySelector('b'); if (text) text.textContent = label;
+    const value = String(status || 'upcoming').trim().toLowerCase().replace(/[-_]+/g, ' ');
+    const live = ['live', 'in progress', 'ongoing'].includes(value);
+    const upcoming = ['upcoming', 'scheduled', 'not started', ''].includes(value);
+    const onBreak = ['break', 'in break', 'interval'].includes(value);
+    node.classList.toggle('is-live', live);
+    node.classList.toggle('is-upcoming', upcoming);
+    const label = node.querySelector('b');
+    if (label) label.textContent = live ? 'LIVE MATCH' : (upcoming ? 'NO LIVE MATCH' : (onBreak ? 'MATCH ON BREAK' : 'MATCH COMPLETED'));
   }
   function renderScore(match) {
     const host = $('#live-match-card'); if (!host) return;
-    if (!match) {
-      setLiveStatus('upcoming');
-      host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>';
-      return;
-    }
-    const state = normaliseMatchStatus(match.status);
-    setLiveStatus(state);
-    if (state === 'upcoming') {
+    if (!match) { setLiveStatus('upcoming'); host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>'; return; }
+    setLiveStatus(match.status || 'upcoming');
+    if (!['live', 'in progress', 'in_progress', 'ongoing'].includes(String(match.status || '').trim().toLowerCase())) {
       host.innerHTML = '<div class="score-empty">No live match at the moment. Check back for the next DPL fixture.</div>';
       return;
     }
@@ -87,8 +75,7 @@
     const batting=match.battingScorecard||[], bowling=match.bowlingScorecard||[], fow=match.fallOfWickets||[], commentary=match.recentCommentary||[];
     const battingHTML=batting.length?`<div class="public-scorecard"><h3>BATTING</h3><div class="scorecard-row scorecard-head"><span>BATTER</span><span>R</span><span>B</span><span>4s</span><span>6s</span></div>${batting.map(p=>`<div class="scorecard-row"><b>${escapeHTML(p.playerName)}</b><span>${p.runs}</span><span>${p.balls}</span><span>${p.fours}</span><span>${p.sixes}</span></div>`).join('')}</div>`:'';
     const bowlingHTML=bowling.length?`<div class="public-scorecard"><h3>BOWLING</h3><div class="scorecard-row bowling-row scorecard-head"><span>BOWLER</span><span>O</span><span>R</span><span>W</span></div>${bowling.map(p=>`<div class="scorecard-row bowling-row"><b>${escapeHTML(p.playerName)}</b><span>${escapeHTML(p.overs)}</span><span>${p.runs}</span><span>${p.wickets}</span></div>`).join('')}</div>`:'';
-    const statusLabel = state === 'live' ? 'LIVE' : state === 'break' ? 'BREAK' : 'COMPLETED';
-    host.innerHTML = `<div class="score-top"><span class="score-live-pill">${statusLabel}</span><span>${escapeHTML(match.matchName || 'DPL MATCH')}</span></div><div class="score-teams"><div><small>${escapeHTML(match.battingTeamName || 'Batting')}</small><strong>${Number(innings.runs||0)}/${Number(innings.wickets||0)}</strong><span>${overs} overs</span></div><div class="score-vs">VS</div><div><small>${escapeHTML(match.bowlingTeamName || 'Bowling')}</small><strong>—</strong><span>${escapeHTML(match.inningsLabel || 'In progress')}</span></div></div><div class="score-meta"><span>CRR ${Number(innings.balls||0) ? (Number(innings.runs||0)/(Number(innings.balls||0)/6)).toFixed(2) : '0.00'}</span><span>EXTRAS ${Number(innings.extras||0)}</span><span>${escapeHTML(match.statusText || (state === 'break' ? 'Match on break' : state === 'completed' ? 'Match completed' : 'Match in progress'))}</span></div><div class="current-players"><span>STRIKER <b>${escapeHTML(match.striker||'—')}</b></span><span>NON-STRIKER <b>${escapeHTML(match.nonStriker||'—')}</b></span><span>BOWLER <b>${escapeHTML(match.bowler||'—')}</b></span></div><div class="score-commentary"><b>LAST BALL</b> ${escapeHTML(match.lastCommentary || 'Waiting for the first delivery')}</div>${battingHTML}${bowlingHTML}<div class="fow-line">FALL OF WICKETS: ${fow.map(x=>`${x.wicket}-${x.score} (${x.over})`).join(' · ')||'—'}</div><div class="public-commentary">${commentary.map(x=>`<p><b>${escapeHTML(x.over)}</b> ${escapeHTML(x.text)}</p>`).join('')}</div>`;
+    host.innerHTML = `<div class="score-top"><span class="score-live-pill">${escapeHTML(match.status || 'Upcoming')}</span><span>${escapeHTML(match.matchName || 'DPL MATCH')}</span></div><div class="score-teams"><div><small>${escapeHTML(match.battingTeamName || 'Batting')}</small><strong>${Number(innings.runs||0)}/${Number(innings.wickets||0)}</strong><span>${overs} overs</span></div><div class="score-vs">VS</div><div><small>${escapeHTML(match.bowlingTeamName || 'Bowling')}</small><strong>—</strong><span>${escapeHTML(match.inningsLabel || 'In progress')}</span></div></div><div class="score-meta"><span>CRR ${Number(innings.balls||0) ? (Number(innings.runs||0)/(Number(innings.balls||0)/6)).toFixed(2) : '0.00'}</span><span>EXTRAS ${Number(innings.extras||0)}</span><span>${escapeHTML(match.statusText || 'Match in progress')}</span></div><div class="current-players"><span>STRIKER <b>${escapeHTML(match.striker||'—')}</b></span><span>NON-STRIKER <b>${escapeHTML(match.nonStriker||'—')}</b></span><span>BOWLER <b>${escapeHTML(match.bowler||'—')}</b></span></div><div class="score-commentary"><b>LAST BALL</b> ${escapeHTML(match.lastCommentary || 'Waiting for the first delivery')}</div>${battingHTML}${bowlingHTML}<div class="fow-line">FALL OF WICKETS: ${fow.map(x=>`${x.wicket}-${x.score} (${x.over})`).join(' · ')||'—'}</div><div class="public-commentary">${commentary.map(x=>`<p><b>${escapeHTML(x.over)}</b> ${escapeHTML(x.text)}</p>`).join('')}</div>`;
   }
   function renderTeams(teams=[]) {
     const host=$('#public-teams'); if (!host) return;
