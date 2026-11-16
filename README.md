@@ -151,6 +151,13 @@ When deploying, retain the original `assets/` folder (including all hero WebP im
 - Payment submission is displayed only after a successful status lookup for a SELECTED application with no payment submission.
 - The backend validates the beneficiary name and exact ₹3,100 amount and stores the beneficiary name in the Payments sheet. Running `setupDatabase` adds the new column to an existing Payments sheet without deleting existing data.
 - After updating Apps Script, deploy a new version of the existing Web App deployment. Then publish the updated website files.
-- Tournament venue displayed on the organiser section: Dariyapur Training College Field, PIN 845417.
+- Tournament venue displayed on the organiser section: DARIYAPUR TRAINING COLLEGE GROUND, PIN - 845417.
 
 **Important:** The QR contains a UPI payment intent with the supplied UPI ID, beneficiary name and fixed amount. Before publishing, scan it with PhonePe and complete a small test/verification flow to confirm the recipient details and amount appear correctly. Do not pay unless the payment app shows `Murshid Iqubal Khan`.
+
+
+### Public selected-team announcement
+A team is added to the public **SELECTED TEAMS** section only after its payment status is manually marked `VERIFIED` by an administrator. Application selection and payment submission alone do not publish the team. The team remains available internally for the existing admin workflow.
+
+
+Venue display format: the organiser section highlights “DARIYAPUR TRAINING COLLEGE GROUND, PIN - 845417” as one complete venue line in a square-corner box.
