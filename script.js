@@ -32,7 +32,7 @@
 
   const API = (window.DPL_CONFIG && window.DPL_CONFIG.API_URL || '').trim();
   const clientKey = (() => { let k=localStorage.getItem('dplPublicClientKey'); if(!k){k=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random());localStorage.setItem('dplPublicClientKey',k);} return k; })();
-  const configured = /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API);
+  const configured = /^(https:\/\/script\.google\.com\/macros\/s\/.+\/exec|https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/dpl-api)$/i.test(API);
   const $ = (selector, root=document) => root.querySelector(selector);
   const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   async function api(action, payload={}) {
@@ -167,7 +167,7 @@
     const fd=new FormData(form), file=fd.get('proof');
     if(String(fd.get('beneficiaryName')||'').trim().toLowerCase()!=='murshid iqubal khan'){setFeedback(feedback,'Please confirm that the recipient name shown in your payment app is Murshid Iqubal Khan.');return;}
     if(fd.get('policyAccepted')!=='on'){setFeedback(feedback,'Please accept the payment policy before submitting.');return;}
-    if(!file || file.size>4*1024*1024){setFeedback(feedback,'Please select a JPG, PNG or PDF file up to 4 MB.');return;}
+    if(!file || file.size>1*1024*1024){setFeedback(feedback,'Please select a JPG, PNG or PDF file up to 1 MB.');return;}
     const allowed=['image/jpeg','image/png','application/pdf']; if(!allowed.includes(file.type)){setFeedback(feedback,'Unsupported proof file type.');return;}
     const reader=new FileReader(); reader.onload=async()=>{try{const base64=String(reader.result).split(',')[1]; const payment={applicationId:fd.get('applicationId'),beneficiaryName:fd.get('beneficiaryName'),transactionId:fd.get('transactionId'),amount:fd.get('amount'),paymentDate:fd.get('paymentDate'),fileName:file.name,mimeType:file.type,fileBase64:base64};const result=await api('submitPayment',{payment});form.reset();$('#selected-payment-panel').hidden=true;setFeedback(feedback,`Payment details submitted for manual verification. Reference: ${result.paymentId}. Check your Application ID again for updates.`,true);}catch(err){setFeedback(feedback,err.message);}}; reader.onerror=()=>setFeedback(feedback,'Could not read the selected file.'); reader.readAsDataURL(file);
   });

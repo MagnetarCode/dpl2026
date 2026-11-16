@@ -1,5 +1,5 @@
 (() => {
-'use strict'; const API=(window.DPL_CONFIG?.API_URL||'').trim(); const configured=/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API); const $=s=>document.querySelector(s); let token=sessionStorage.getItem('dplAdminSession')||'';let role='';let currentMatch=null;let cache={};
+'use strict'; const API=(window.DPL_CONFIG?.API_URL||'').trim(); const configured=/^(https:\/\/script\.google\.com\/macros\/s\/.+\/exec|https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/dpl-api)$/i.test(API); const $=s=>document.querySelector(s); let token=sessionStorage.getItem('dplAdminSession')||'';let role='';let currentMatch=null;let cache={};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function call(action,data={}){if(!configured)throw Error('Backend not configured. Set API_URL in config.js.');const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,sessionToken:token,...data})});if(!r.ok)throw Error('Backend request failed.');const j=await r.json();if(!j.ok)throw Error(j.error||'Request denied.');return j;}
 function feedback(message,good=false){const el=$('#dashboard-feedback');el.textContent=message;el.className='form-feedback '+(good?'success':'error');}
