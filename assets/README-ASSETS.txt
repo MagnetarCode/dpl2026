@@ -1,0 +1,1 @@
+Copy your existing DPL image assets (hero-slide-1.webp, hero-slide-2.webp, hero-slide-3.webp, organiser-photo.jpg and other current assets) into this folder from your existing repository. The updated payment QR is included here.
