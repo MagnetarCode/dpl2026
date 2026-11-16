@@ -138,9 +138,7 @@
       <div class="registration-heading">
         <p class="eyebrow dark">YOUR JOURNEY STARTS HERE</p>
         <h2>REGISTER<br><em>YOUR TEAM.</em></h2>
-        <p class="registration-intro">Submit the registration form and wait for confirmation. Selected teams will receive an official WhatsApp message from the DPL Authority Number with payment details. Pay ₹3,100 only to the officially provided number.
-
-⚠️ No payment before selection!</p>
+        <p class="registration-intro">Submit your team application and save your Application ID. Check your status below. If your team is officially selected, payment instructions and the secure payment submission form will appear here. Registration fee: ₹3,100 per team. Do not pay before selection.</p>
       </div>
       <form id="team-registration-form" class="dpl-form" novalidate>
         <div class="form-grid">
@@ -156,33 +154,39 @@
         <button class="dpl-submit" type="submit">SUBMIT TEAM APPLICATION <span>↗</span></button>
         <p class="form-feedback" id="registration-feedback" role="status" aria-live="polite"></p>
       </form>
-      <div class="application-lookup"><h3>ALREADY APPLIED?</h3><p>Check your application status using your Application ID.</p><form id="application-lookup-form"><input name="applicationId" required placeholder="Example: DPL-2026-ABC123" aria-label="Application ID"><button type="submit">CHECK STATUS</button></form><p id="application-lookup-result" role="status"></p></div>
-    </section>
-
-    <section class="payment-section section" id="payment">
-      <div class="section-label">07 / PAYMENT SUBMISSION</div>
-      <div class="payment-heading"><p class="eyebrow dark">ONLY AFTER OFFICIAL SELECTION</p><h2>SUBMIT <em>PAYMENT.</em></h2><p>Selected teams can submit transaction details and payment proof here. Payments remain pending until manually verified by the Main Admin.</p></div>
-      <form id="payment-form" class="dpl-form" novalidate>
-        <div class="form-grid">
-          <label>Application ID *<input name="applicationId" required maxlength="40" placeholder="Your Application ID"></label>
-          <label>Transaction / UTR ID *<input name="transactionId" required maxlength="80" placeholder="Enter transaction reference"></label>
-          <label>Amount paid (₹) *<input name="amount" required type="number" min="1" max="100000" step="1" placeholder="Amount paid"></label>
-          <label>Payment date *<input name="paymentDate" required type="date"></label>
-          <label class="full-field">Payment proof (JPG, PNG or PDF; max 4 MB) *<input name="proof" type="file" accept="image/jpeg,image/png,application/pdf" required></label>
+      <div class="application-lookup"><h3>ALREADY APPLIED?</h3><p>Enter your Application ID to check your application and payment status.</p><form id="application-lookup-form"><input name="applicationId" required maxlength="40" placeholder="Example: DPL-2026-ABC123" aria-label="Application ID"><button type="submit">CHECK STATUS</button></form><div id="application-lookup-result" role="status" aria-live="polite"></div></div>
+      <div id="selected-payment-panel" class="selected-payment-panel" hidden>
+        <div class="payment-heading"><p class="eyebrow dark">OFFICIAL PAYMENT DETAILS</p><h2>COMPLETE <em>PAYMENT.</em></h2><p>Your team has been selected. Pay exactly ₹3,100 to the verified UPI account below, then submit your payment details for manual verification.</p></div>
+        <div class="upi-payment-card">
+          <div class="upi-qr-wrap"><img src="assets/upi-qr.png" alt="UPI QR code for DPL 2026 team registration fee of 3100 rupees"><small>SCAN WITH PHONEPE OR ANY UPI APP</small></div>
+          <div class="upi-details"><span class="payment-label">PAYMENT AMOUNT</span><strong class="upi-amount">₹3,100</strong><span class="payment-label">VERIFIED BENEFICIARY</span><strong>Murshid Iqubal Khan</strong><span class="payment-label">UPI ID</span><code>9990966745@ybl</code><button type="button" id="copy-upi" class="copy-upi">COPY UPI ID</button><p class="payment-warning">Before entering your UPI PIN, confirm that the recipient name shown in your payment app is <b>Murshid Iqubal Khan</b>.</p>
+          </div>
         </div>
-        <button class="dpl-submit" type="submit">SUBMIT FOR VERIFICATION <span>↗</span></button><p class="form-feedback" id="payment-feedback" role="status" aria-live="polite"></p>
-      </form>
+        <form id="payment-form" class="dpl-form" novalidate>
+          <input type="hidden" name="applicationId" id="payment-application-id">
+          <div class="form-grid">
+            <label>Beneficiary name shown in payment app *<input name="beneficiaryName" required maxlength="100" placeholder="Confirm recipient name"></label>
+            <label>Transaction / UTR ID *<input name="transactionId" required maxlength="80" placeholder="Enter transaction reference"></label>
+            <label>Amount paid (₹) *<input name="amount" required type="number" min="3100" max="3100" step="1" value="3100" readonly></label>
+            <label>Payment date *<input name="paymentDate" required type="date"></label>
+            <label class="full-field">Payment proof (JPG, PNG or PDF; max 4 MB) *<input name="proof" type="file" accept="image/jpeg,image/png,application/pdf" required></label>
+          </div>
+          <div class="policy-box"><h3>DPL 2026 – Payment, Cancellation &amp; Refund Policy</h3><ol><li>The team registration fee is ₹3,100 per team.</li><li>Payment must be made only after the team has been officially selected by the DPL administration.</li><li>Once payment has been successfully completed, the registration fee is <b>non-refundable</b>.</li><li>Teams cannot claim a refund simply because they decide not to participate, withdraw from the tournament or are unable to attend.</li><li>Captains must carefully verify all payment details before making payment.</li><li>If a payment is accidentally duplicated or received in excess, the organiser will review the transaction and address the issue appropriately.</li><li>If the tournament is cancelled by the organiser, postponed indefinitely or cannot be conducted, the organiser will communicate the applicable refund or alternative arrangements to the participating teams.</li></ol><p>By submitting payment, the team captain confirms that they have read and accepted these terms.</p></div>
+          <label class="consent-line policy-consent"><input type="checkbox" name="policyAccepted" required> I have read and accept the DPL 2026 Payment, Cancellation &amp; Refund Policy.</label>
+          <button class="dpl-submit" type="submit">SUBMIT PAYMENT FOR VERIFICATION <span>↗</span></button><p class="form-feedback" id="payment-feedback" role="status" aria-live="polite"></p>
+        </form>
+      </div>
     </section>
 
     <section class="comments-section section" id="comments">
-      <div class="section-label light-label">08 / COMMUNITY VOICE</div>
+      <div class="section-label light-label">07 / COMMUNITY VOICE</div>
       <div class="teams-heading"><p class="eyebrow">SAY IT FOR THE GAME</p><h2>FAN <em>COMMENTS.</em></h2><p>Share your support. You can post anonymously; comments may be moderated.</p></div>
       <form id="comment-form" class="comment-form"><label>Display name (optional)<input name="displayName" maxlength="35" placeholder="Anonymous supporter"></label><label>Your comment *<textarea name="message" rows="3" maxlength="500" required placeholder="Write a respectful message..."></textarea></label><button type="submit" class="dpl-submit comment-submit">SUBMIT COMMENT ↗</button><p id="comment-feedback" class="form-feedback" role="status"></p></form>
       <div id="public-comments" class="comment-list"><p class="empty-note">Be the first to leave a comment.</p></div>
     </section>
 
     <section class="organiser section" id="organiser">
-      <div class="section-label">09 / THE ORGANISER</div>
+      <div class="section-label">08 / THE ORGANISER</div>
       <div class="organiser-layout">
         <div class="organiser-photo-wrap">
           <img src="assets/organiser-photo.jpg" alt="Mr. Mohammad Shamshad Alam" class="organiser-photo">
@@ -193,13 +197,13 @@
           <h2>MEET THE<br><em>ORGANISER.</em></h2>
           <h3>Mr. Mohammad Shamshad Alam</h3>
           <p class="organiser-role">Mukhiya Candidate, Paschimi Madhubani, Dariyapur - 845417</p>
-          <p class="organiser-description">With the support of the Dariyapur community, bringing people together through the spirit of cricket.</p>
+          <p class="organiser-description">With the support of the Dariyapur community, bringing people together through the spirit of cricket.</p><p class="organiser-venue"><b>Tournament Venue:</b> Dariyapur Training College Field, PIN 845417</p>
         </div>
       </div>
     </section>
 
     <section class="sponsors section" id="sponsors">
-      <div class="section-label light-label">10 / WITH THE SUPPORT OF</div>
+      <div class="section-label light-label">09 / WITH THE SUPPORT OF</div>
       <div class="sponsors-heading">
         <p class="eyebrow">OUR PARTNERS</p>
         <h2>POWERED BY<br><em>OUR SPONSORS.</em></h2>
@@ -212,7 +216,7 @@
     </section>
 
     <section class="contact section" id="contact">
-      <div class="section-label">11 / CONTACT</div>
+      <div class="section-label">10 / CONTACT</div>
       <div class="contact-layout">
         <div>
           <p class="eyebrow dark">HAVE A QUESTION?</p>

@@ -87,7 +87,7 @@ Commit the project files to the root of your existing GitHub Pages repository, p
 1. Applicants submit a team application and receive an Application ID.
 2. Main Admin reviews Applications and selects or rejects each application. Selection generates a Team ID in the `HTK-2026-###` format.
 3. Only selected teams are shown on the public website.
-4. A selected team submits transaction ID, amount, date and payment proof. Proof files are stored in a private Drive folder created by the backend.
+4. A selected team checks its Application ID on the public site, sees the fixed ₹3,100 UPI QR and submits beneficiary name, transaction ID, amount, date, policy acceptance and payment proof in the same application journey. Proof files are stored in a private Drive folder created by the backend.
 5. Payment status remains pending until Main Admin manually approves or rejects it.
 6. Main Admin adds player records, selects each team’s Playing XI (11 players), and creates fixtures between selected teams.
 7. Admin sets a match to Live, selects striker, non-striker and bowler, and records ball events. Score totals and legal-ball overs are calculated server-side; undo marks the latest delivery as undone and rebuilds aggregate totals.
@@ -141,3 +141,16 @@ The refreshed `index.html` and `style.css` add a responsive hero composition and
 - Added reduced-motion fallbacks.
 
 When deploying, retain the original `assets/` folder (including all hero WebP images and the organiser photograph) and keep your existing backend deployment and configuration values.
+
+
+## DPL 2026 payment-flow update
+
+- UPI ID: `9990966745@ybl`
+- Verified beneficiary: `Murshid Iqubal Khan`
+- QR encodes a fixed ₹3,100 payment and is stored at `assets/upi-qr.png`.
+- Payment submission is displayed only after a successful status lookup for a SELECTED application with no payment submission.
+- The backend validates the beneficiary name and exact ₹3,100 amount and stores the beneficiary name in the Payments sheet. Running `setupDatabase` adds the new column to an existing Payments sheet without deleting existing data.
+- After updating Apps Script, deploy a new version of the existing Web App deployment. Then publish the updated website files.
+- Tournament venue displayed on the organiser section: Dariyapur Training College Field, PIN 845417.
+
+**Important:** The QR contains a UPI payment intent with the supplied UPI ID, beneficiary name and fixed amount. Before publishing, scan it with PhonePe and complete a small test/verification flow to confirm the recipient details and amount appear correctly. Do not pay unless the payment app shows `Murshid Iqubal Khan`.

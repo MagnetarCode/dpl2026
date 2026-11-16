@@ -145,16 +145,31 @@
     catch(err){setFeedback(feedback,err.message);}
   });
   $('#application-lookup-form')?.addEventListener('submit',async e=>{
-    e.preventDefault(); const id=new FormData(e.currentTarget).get('applicationId').trim(); const host=$('#application-lookup-result');
-    try { const result=await api('lookupApplication',{applicationId:id}); host.textContent=`Application ${result.applicationId}: ${result.applicationStatus}. Payment: ${result.paymentStatus}.`; }
-    catch(err){host.textContent=err.message;}
+    e.preventDefault(); const id=String(new FormData(e.currentTarget).get('applicationId')||'').trim(); const host=$('#application-lookup-result'), panel=$('#selected-payment-panel');
+    if(panel) panel.hidden=true;
+    host.textContent='Checking your application…';
+    try {
+      const result=await api('lookupApplication',{applicationId:id});
+      const status=String(result.applicationStatus||'PENDING').toUpperCase();
+      const payment=String(result.paymentStatus||'NOT_SUBMITTED').toUpperCase();
+      const statusText=status==='SELECTED'?'Your team has been selected.':status==='REJECTED'?'Your application was not selected.':'Your application is under review.';
+      const payText=payment==='VERIFIED'?'Payment verified — your registration payment is confirmed.':payment==='PENDING'?'Payment received and awaiting manual verification.':payment==='REJECTED'?'Payment was not approved. Please contact the DPL organisers.':'Payment has not been submitted.';
+      host.innerHTML=`<div class="application-status-card"><b>${escapeHTML(result.teamName||'Team application')}</b><p>Application ID: <strong>${escapeHTML(result.applicationId)}</strong></p><p>Application status: <strong>${escapeHTML(status)}</strong></p><p>${escapeHTML(statusText)}</p><p>Payment status: <strong>${escapeHTML(payment)}</strong></p><p>${escapeHTML(payText)}</p></div>`;
+      if(status==='SELECTED' && payment==='NOT_SUBMITTED' && panel){ panel.hidden=false; $('#payment-application-id').value=result.applicationId; panel.scrollIntoView({behavior:'smooth',block:'start'}); }
+    } catch(err){host.textContent=err.message;}
+  });
+  $('#copy-upi')?.addEventListener('click',async()=>{
+    try { await navigator.clipboard.writeText('9990966745@ybl'); $('#copy-upi').textContent='COPIED'; }
+    catch(err){ $('#copy-upi').textContent='COPY NOT AVAILABLE'; }
   });
   $('#payment-form')?.addEventListener('submit',async e=>{
     e.preventDefault(); const form=e.currentTarget, feedback=$('#payment-feedback'); if(!form.reportValidity())return;
     const fd=new FormData(form), file=fd.get('proof');
+    if(String(fd.get('beneficiaryName')||'').trim().toLowerCase()!=='murshid iqubal khan'){setFeedback(feedback,'Please confirm that the recipient name shown in your payment app is Murshid Iqubal Khan.');return;}
+    if(fd.get('policyAccepted')!=='on'){setFeedback(feedback,'Please accept the payment policy before submitting.');return;}
     if(!file || file.size>4*1024*1024){setFeedback(feedback,'Please select a JPG, PNG or PDF file up to 4 MB.');return;}
     const allowed=['image/jpeg','image/png','application/pdf']; if(!allowed.includes(file.type)){setFeedback(feedback,'Unsupported proof file type.');return;}
-    const reader=new FileReader(); reader.onload=async()=>{try{const base64=String(reader.result).split(',')[1]; const payment={applicationId:fd.get('applicationId'),transactionId:fd.get('transactionId'),amount:fd.get('amount'),paymentDate:fd.get('paymentDate'),fileName:file.name,mimeType:file.type,fileBase64:base64};const result=await api('submitPayment',{payment});form.reset();setFeedback(feedback,`Payment details submitted for manual verification. Reference: ${result.paymentId}.`,true);}catch(err){setFeedback(feedback,err.message);}}; reader.onerror=()=>setFeedback(feedback,'Could not read the selected file.'); reader.readAsDataURL(file);
+    const reader=new FileReader(); reader.onload=async()=>{try{const base64=String(reader.result).split(',')[1]; const payment={applicationId:fd.get('applicationId'),beneficiaryName:fd.get('beneficiaryName'),transactionId:fd.get('transactionId'),amount:fd.get('amount'),paymentDate:fd.get('paymentDate'),fileName:file.name,mimeType:file.type,fileBase64:base64};const result=await api('submitPayment',{payment});form.reset();$('#selected-payment-panel').hidden=true;setFeedback(feedback,`Payment details submitted for manual verification. Reference: ${result.paymentId}. Check your Application ID again for updates.`,true);}catch(err){setFeedback(feedback,err.message);}}; reader.onerror=()=>setFeedback(feedback,'Could not read the selected file.'); reader.readAsDataURL(file);
   });
   $('#comment-form')?.addEventListener('submit',async e=>{
     e.preventDefault();const form=e.currentTarget,feedback=$('#comment-feedback');if(!form.reportValidity())return;const data=Object.fromEntries(new FormData(form).entries());
