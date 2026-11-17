@@ -1,7 +1,30 @@
 (() => {
 'use strict'; const API=(window.DPL_CONFIG?.API_URL||'').trim(); const configured=/^(https:\/\/script\.google\.com\/macros\/s\/.+\/exec|https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/dpl-api)$/i.test(API); const $=s=>document.querySelector(s); let token=sessionStorage.getItem('dplAdminSession')||'';let role='';let currentMatch=null;let cache={};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function call(action,data={}){if(!configured)throw Error('Backend not configured. Set API_URL in config.js.');const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,sessionToken:token,...data})});if(!r.ok)throw Error('Backend request failed.');const j=await r.json();if(!j.ok)throw Error(j.error||'Request denied.');return j;}
+async function call(action, data = {}) {
+  if (!configured) {
+    throw Error('Backend not configured. Set API_URL in config.js.');
+  }
+
+  const r = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, sessionToken: token, ...data })
+  });
+
+  let j;
+  try {
+    j = await r.json();
+  } catch {
+    throw Error('Unable to read the server response. Please try again.');
+  }
+
+  if (!r.ok || !j.ok) {
+    throw Error(j.error || 'Request failed. Please try again.');
+  }
+
+  return j;
+}
 function feedback(message,good=false){const el=$('#dashboard-feedback');el.textContent=message;el.className='form-feedback '+(good?'success':'error');}
 function showDashboard(user){role=user.role;$('#login-panel').hidden=true;$('#dashboard-panel').hidden=false;$('#admin-identity').textContent=`Signed in as ${user.username} · ${role.replace('_',' ')}`;document.querySelectorAll('[data-role="MAIN_ADMIN"]').forEach(el=>el.hidden=role!=='MAIN_ADMIN');document.querySelectorAll('.admin-view').forEach(el=>el.hidden=true);document.querySelector('[data-view="scoring"]').hidden=false;loadMatches(true);if(role==='MAIN_ADMIN')loadTeams(true);}
 $('#login-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const d=await call('login',{username:f.get('username'),password:f.get('password')});token=d.sessionToken;sessionStorage.setItem('dplAdminSession',token);showDashboard(d.user);}catch(err){$('#login-feedback').textContent=err.message;}});
